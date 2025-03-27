@@ -1413,13 +1413,22 @@ static const char * const typec_pwr_opmodes[] = {
 	[TYPEC_PWR_MODE_PD]	= "usb_power_delivery",
 };
 
+#define TYPEC_PWR_MODE_INDEX_ERR_STR "pwr_opmode_index_error"
+#define TYPEC_PWR_MODE_UNKOWN_STR "unknown"
 static ssize_t power_operation_mode_show(struct device *dev,
 					 struct device_attribute *attr,
 					 char *buf)
 {
 	struct typec_port *port = to_typec_port(dev);
 
-	return sprintf(buf, "%s\n", typec_pwr_opmodes[port->pwr_opmode]);
+	if (!port) {
+		dev_err(dev, "%s: typec_port handle is NULL");
+		return sprintf(buf, "%s\n", TYPEC_PWR_MODE_UNKOWN_STR);
+	} else if (port->pwr_opmode < TYPEC_PWR_MODE_USB || port->pwr_opmode > TYPEC_PWR_MODE_PD) {
+		return sprintf(buf, "%s\n", TYPEC_PWR_MODE_INDEX_ERR_STR);
+	} else {
+		return sprintf(buf, "%s\n", typec_pwr_opmodes[port->pwr_opmode]);
+	}
 }
 static DEVICE_ATTR_RO(power_operation_mode);
 
